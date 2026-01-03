@@ -10,6 +10,7 @@
             --gold: #d4af37; 
             --bg-black: #070606; 
             --white: #ffffff; 
+            --muted: rgba(255,255,255,0.06);
         }
 
         /* Global */
@@ -40,7 +41,7 @@
 
         #gallery { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
             gap: 20px; 
             padding: 20px; 
             max-width: 1200px; 
@@ -61,6 +62,9 @@
             transition: transform 220ms ease, box-shadow 220ms ease;
             transform-origin: center;
             will-change: transform;
+            min-height: 320px;
+            display:flex;
+            flex-direction:column;
         }
 
         .item-card:hover { 
@@ -73,14 +77,15 @@
             width: 100%; 
             aspect-ratio: 1/1.2; 
             position:relative;
-            background: #090909;
+            background: linear-gradient(90deg,#0a0a0a,#0c0c0c);
+            display:block;
         }
 
         .item-card img { 
             width: 100%; 
             height: 100%; 
             object-fit: cover; 
-            transition: transform 360ms ease, filter 280ms ease; 
+            transition: transform 360ms ease, filter 280ms ease, opacity 160ms ease; 
             display: block;
             will-change: transform, opacity;
             transform-origin: center;
@@ -123,7 +128,7 @@
             border: 1px solid rgba(212,175,55,0.08);
         }
 
-        .del-btn { 
+        .del-btn, .edit-btn { 
             position: absolute;
             top: 10px;
             right: 10px;
@@ -137,6 +142,59 @@
             font-weight: 700;
             cursor: pointer;
             text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .edit-btn {
+            background: rgba(212,175,55,0.95);
+            color: black;
+            right: 86px;
+        }
+
+        /* edit panel inside card (admin) */
+        .edit-panel {
+            position: absolute;
+            top: 48px;
+            right: 10px;
+            z-index: 999;
+            width: 220px;
+            background: #0b0b0b;
+            border: 1px solid rgba(212,175,55,0.08);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+        }
+        .edit-panel input, .edit-panel select, .edit-panel button {
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: #111;
+            color: white;
+            font-size: 13px;
+        }
+        .edit-panel .save-btn { background: linear-gradient(90deg,#d4af37,#f5e2a6); color: black; border: none; font-weight: 700; cursor: pointer; }
+        .edit-panel .cancel-btn { background: transparent; color: var(--gold); border: 1px solid rgba(212,175,55,0.12); }
+
+        /* skeleton loader (gallery) */
+        .skeleton-card {
+            border-radius: 12px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            min-height: 320px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+        }
+        .skeleton-anim {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.03) 50%, rgba(255,255,255,0.01) 100%);
+            animation: shimmer 1.2s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         /* modal simplified */
@@ -150,9 +208,15 @@
             background: rgba(0,0,0,0.85);
         }
         #photoModal.active { display: flex; }
-        .modal-container { position: relative; max-width: 90%; text-align: center; }
-        .modal-content { max-height: 80vh; max-width: 100%; border-radius: 12px; border: 1px solid rgba(212,175,55,0.08); display:block; margin:0 auto; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
-        .modal-loader { color: var(--gold); padding: 12px 0; display:none; }
+        .modal-container { position: relative; max-width: 92%; text-align: center; }
+        .modal-content { max-height: 82vh; max-width: 100%; border-radius: 12px; border: 1px solid rgba(212,175,55,0.08); display:block; margin:0 auto; box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
+        .modal-loader { color: var(--gold); padding: 24px 0; display:flex; align-items:center; justify-content:center; gap:12px; }
+        .spinner {
+            width: 28px; height: 28px; border-radius: 50%;
+            border: 3px solid rgba(255,255,255,0.08); border-top-color: var(--gold);
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .wa-btn { 
             display: inline-block; 
@@ -179,6 +243,7 @@
         /* Load more */
         #loadMoreWrap { text-align:center; margin-bottom: 40px; }
         #loadMore { background: transparent; border: 1px solid rgba(212,175,55,0.15); color: var(--gold); padding: 10px 20px; border-radius: 999px; cursor:pointer; }
+        #loadMore[disabled] { opacity: 0.45; cursor: default; transform: none; }
     </style>
 </head>
 <body>
@@ -194,10 +259,10 @@
     <div id="photoModal" role="dialog" aria-modal="true" aria-hidden="true">
         <div class="modal-container">
             <span id="modalClose" onclick="closeModal()" style="position:absolute; top:-48px; right:0; color:var(--gold); font-size:36px; cursor:pointer;">&times;</span>
-            <div class="modal-loader" id="modalLoader">Loading…</div>
-            <img class="modal-content" id="modalImg" alt="Enlarged photo">
+            <div class="modal-loader" id="modalLoader"><div class="spinner" aria-hidden="true"></div><div id="modalLoaderText">Loading…</div></div>
+            <img class="modal-content" id="modalImg" alt="Enlarged photo" style="display:none;">
             <br>
-            <a id="waLink" href="#" target="_blank" class="wa-btn">Inquire on WhatsApp</a>
+            <a id="waLink" href="#" target="_blank" class="wa-btn" style="display:none">Inquire on WhatsApp</a>
         </div>
     </div>
 
@@ -221,7 +286,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, getDocs, limit, startAfter, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, getDocs, limit, startAfter, deleteDoc, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDCBOg_FlIpVZyBYVW6yFUcgU7gwIUD1Ks",
@@ -235,11 +300,11 @@
         const db = getFirestore(app);
 
         // Perf-tuned constants
-        const PAGE_SIZE = 12;
-        const THUMB_TARGET_KB = 18;    // small thumbnail for gallery
+        const PAGE_SIZE = 9;               // smaller page for faster initial paint
+        const THUMB_TARGET_KB = 18;        // small thumbnail for gallery
         const THUMB_MAX_WIDTH = 420;
-        const FULL_TARGET_KB = 50;     // full image for modal
-        const FULL_MAX_WIDTH = 700;
+        const FULL_TARGET_KB = 50;         // full image for modal
+        const FULL_MAX_WIDTH = 900;        // allow slightly larger modal for good look
         const MIN_QUALITY = 0.45;
 
         let isAdmin = false;
@@ -381,37 +446,84 @@
             }
         };
 
-        // Modal handling: load full image (we stored full as a property on the card)
-        function openModal(fullSrc, price, category) {
+        // update fields (used by edit)
+        async function updateItemFields(e, id, fields, panel) {
+            e.stopPropagation();
+            try {
+                panel.querySelector('.save-btn').disabled = true;
+                await updateDoc(doc(db, "event_photos", id), fields);
+                panel.querySelector('.save-btn').innerText = "Saved";
+                setTimeout(()=> resetAndLoad(), 700);
+            } catch (err) {
+                console.error("Update failed", err);
+                panel.querySelector('.save-btn').innerText = "Error";
+                panel.querySelector('.save-btn').disabled = false;
+            }
+        }
+
+        // Modal handling: load full image on demand (fetch from doc if we avoided keeping large data in DOM)
+        async function openModal(card) {
             const imgEl = document.getElementById('modalImg');
             const loader = document.getElementById('modalLoader');
             const wa = document.getElementById('waLink');
-            loader.style.display = 'block';
+            const waText = document.getElementById('modalLoaderText');
+            loader.style.display = 'flex';
             imgEl.style.display = 'none';
+            wa.style.display = 'none';
             document.getElementById('photoModal').classList.add('active');
             document.getElementById('photoModal').setAttribute('aria-hidden', 'false');
 
-            // Pre-decode fullSrc if needed
-            const pre = new Image();
-            pre.src = fullSrc;
-            pre.onload = () => {
-                imgEl.src = fullSrc;
-                const msg = encodeURIComponent(`Hi Alankar Events, I'm interested in this setup. Category: ${category}. Price: ${price}`);
+            // If this card already has cached _full, use it
+            if (card._full) {
+                imgEl.src = card._full;
+                imgEl.onload = () => {
+                    loader.style.display = 'none';
+                    imgEl.style.display = 'block';
+                };
+                const msg = encodeURIComponent(`Hi Alankar Events, I'm interested in this setup. Category: ${card._category}. Price: ${card._price}`);
                 wa.href = `https://wa.me/916361755076?text=${msg}`;
+                wa.style.display = 'inline-block';
+                return;
+            }
+
+            // otherwise fetch the full from Firestore doc (keeps memory low)
+            try {
+                const remote = await getDoc(doc(db, "event_photos", card._id));
+                const data = remote.data() || {};
+                const fullSrc = data.imageText;
+                card._full = fullSrc; // cache for quick re-open
+                card._category = data.category || card._category;
+                card._price = data.price || card._price;
+
+                // attempt to decode image and display
+                const pre = new Image();
+                pre.src = fullSrc;
+                pre.onload = () => {
+                    imgEl.src = fullSrc;
+                    const msg = encodeURIComponent(`Hi Alankar Events, I'm interested in this setup. Category: ${card._category}. Price: ${card._price}`);
+                    wa.href = `https://wa.me/916361755076?text=${msg}`;
+                    loader.style.display = 'none';
+                    imgEl.style.display = 'block';
+                    wa.style.display = 'inline-block';
+                };
+                pre.onerror = () => {
+                    imgEl.src = fullSrc;
+                    loader.style.display = 'none';
+                    imgEl.style.display = 'block';
+                    wa.style.display = 'inline-block';
+                };
+            } catch (err) {
+                console.error("Failed to fetch full image", err);
                 loader.style.display = 'none';
-                imgEl.style.display = 'block';
-            };
-            pre.onerror = () => {
-                imgEl.src = fullSrc;
-                loader.style.display = 'none';
-                imgEl.style.display = 'block';
-            };
+                wa.style.display = 'none';
+            }
         }
 
         function closeModal() {
             document.getElementById('photoModal').classList.remove('active');
             document.getElementById('photoModal').setAttribute('aria-hidden', 'true');
             document.getElementById('modalImg').src = '';
+            document.getElementById('waLink').style.display = 'none';
         }
 
         // Lazy-loading using IntersectionObserver for thumbs
@@ -421,29 +533,50 @@
                     const img = entry.target;
                     const src = img.dataset.src;
                     if (src) {
-                        img.src = src;
-                        img.removeAttribute('data-src');
-                        img.decode?.().catch(()=>{});
+                        // progressive reveal: set a very small timeout to avoid jank on scroll
+                        requestAnimationFrame(() => {
+                            img.src = src;
+                            img.removeAttribute('data-src');
+                            img.decode?.().catch(()=>{});
+                        });
                     }
                     obs.unobserve(img);
                 }
             });
-        }, { rootMargin: '200px' }) : null;
+        }, { rootMargin: '300px' }) : null;
 
         // Render + Pagination using getDocs (fast initial paint, less realtime overhead)
         const galleryEl = document.getElementById('gallery');
         const loadMoreBtn = document.getElementById('loadMore');
         loadMoreBtn.addEventListener('click', () => loadPage());
 
+        // show skeleton placeholders to improve perceived performance
+        function showSkeleton(count = PAGE_SIZE) {
+            galleryEl.innerHTML = '';
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < count; i++) {
+                const s = document.createElement('div');
+                s.className = 'skeleton-card';
+                const anim = document.createElement('div');
+                anim.className = 'skeleton-anim';
+                s.appendChild(anim);
+                frag.appendChild(s);
+            }
+            galleryEl.appendChild(frag);
+        }
+
         async function resetAndLoad() {
             lastVisible = null;
-            galleryEl.innerHTML = '';
+            showSkeleton(6); // show a small number quickly
             document.getElementById('loadMoreWrap').style.display = 'block';
             await loadPage(true);
         }
 
         async function loadPage(initial = false) {
+            // Prevent double clicks quickly
+            if (loadMoreBtn.disabled) return;
             loadMoreBtn.disabled = true;
+            const prevText = loadMoreBtn.innerText;
             loadMoreBtn.innerText = "Loading...";
             try {
                 let q;
@@ -461,28 +594,51 @@
                     return;
                 }
 
-                // append results
+                // append results (use DocumentFragment for minimal reflow)
                 const frag = document.createDocumentFragment();
+
                 for (const fbDoc of snap.docs) {
                     const d = fbDoc.data() || {};
                     if (!d.category) d.category = "Marriage";
+
+                    // card
                     const card = document.createElement('div');
                     card.className = "item-card";
-                    card.onclick = () => openModal(card._full || d.imageText, d.price || "Request Quote", d.category || "Marriage");
 
-                    // set stored full on card for quick modal open
-                    card._full = d.imageText; // full base64
-                    // use thumbnail for gallery display
+                    // store id & metadata on card (avoid storing large full image unless small)
+                    card._id = fbDoc.id;
+                    card._category = d.category || "Marriage";
+                    card._price = d.price || "Request Quote";
+
+                    // Decide whether to keep the full string in memory: only if small enough
+                    try {
+                        const sizeKB = dataUrlSizeKB(d.imageText || "");
+                        if ((sizeKB > 0 && sizeKB <= FULL_TARGET_KB + 6)) {
+                            card._full = d.imageText;
+                        } else {
+                            card._full = null;
+                        }
+                    } catch (err) {
+                        card._full = null;
+                    }
+
+                    // click opens modal (we pass the card object)
+                    card.onclick = () => openModal(card);
+
+                    // image wrapper
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'img-wrapper';
+
+                    // image element uses lazy loading + IO
                     const img = document.createElement('img');
                     img.alt = d.category || "Photo";
                     img.loading = 'lazy';
-                    img.dataset.src = d.thumb || d.imageText; // fallback to full if no thumb
+                    img.dataset.src = d.thumb || d.imageText || '';
                     img.style.opacity = '0';
                     img.addEventListener('load', () => { img.style.transition = 'opacity .18s'; img.style.opacity = '1'; });
 
-                    const wrapper = document.createElement('div');
-                    wrapper.className = 'img-wrapper';
                     wrapper.appendChild(img);
+                    card.appendChild(wrapper);
 
                     // If thumb missing, schedule a background thumbnail creation (deferred)
                     if (!d.thumb && d.imageText) {
@@ -497,32 +653,56 @@
                         });
                     }
 
-                    // background compress full image (deferred) if it's too large
-                    try {
-                        const sizeKB = dataUrlSizeKB(d.imageText || "");
-                        if (sizeKB > FULL_TARGET_KB + 8) {
-                            idle(async () => {
-                                try {
-                                    const compressed = await compressDataUrlToTarget(d.imageText, FULL_TARGET_KB, FULL_MAX_WIDTH);
-                                    await updateDoc(doc(db, "event_photos", fbDoc.id), { imageText: compressed });
-                                } catch (err) {
-                                    console.warn("Background compress failed for", fbDoc.id, err);
-                                }
-                            });
-                        }
-                    } catch (err) {
-                        console.error("Size check failed", err);
-                    }
-
-                    // admin remove button if admin
+                    // admin controls
                     if (isAdmin) {
                         const delBtn = document.createElement('button');
                         delBtn.className = 'del-btn';
                         delBtn.innerText = 'REMOVE';
                         delBtn.onclick = (e) => deleteItem(e, fbDoc.id);
                         card.appendChild(delBtn);
+
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'edit-btn';
+                        editBtn.innerText = 'EDIT';
+                        editBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            // toggle edit panel
+                            const existing = card.querySelector('.edit-panel');
+                            if (existing) {
+                                existing.remove();
+                                return;
+                            }
+                            const panel = document.createElement('div');
+                            panel.className = 'edit-panel';
+                            const priceInput = document.createElement('input');
+                            priceInput.value = d.price || '';
+                            priceInput.placeholder = 'Price';
+                            const catSelect = document.createElement('select');
+                            ['Marriage','Birthday','Babyshower','Other'].forEach(v => {
+                                const o = document.createElement('option');
+                                o.value = v; o.innerText = v;
+                                if (v === (d.category || 'Marriage')) o.selected = true;
+                                catSelect.appendChild(o);
+                            });
+                            const saveBtn = document.createElement('button');
+                            saveBtn.className = 'save-btn';
+                            saveBtn.innerText = 'Save';
+                            saveBtn.onclick = (ev) => updateItemFields(ev, fbDoc.id, { price: priceInput.value || 'Request Quote', category: catSelect.value || 'Other' }, panel);
+                            const cancelBtn = document.createElement('button');
+                            cancelBtn.className = 'cancel-btn';
+                            cancelBtn.innerText = 'Cancel';
+                            cancelBtn.onclick = (ev) => { ev.stopPropagation(); panel.remove(); };
+
+                            panel.appendChild(priceInput);
+                            panel.appendChild(catSelect);
+                            panel.appendChild(saveBtn);
+                            panel.appendChild(cancelBtn);
+                            card.appendChild(panel);
+                        };
+                        card.appendChild(editBtn);
                     }
 
+                    // badge + price
                     const badge = document.createElement('div');
                     badge.className = 'category-badge';
                     badge.innerText = d.category || "Marriage";
@@ -532,18 +712,22 @@
                     priceTag.innerText = d.price || "Request Quote";
 
                     card.appendChild(badge);
-                    card.appendChild(wrapper);
                     card.appendChild(priceTag);
 
                     frag.appendChild(card);
 
-                    if (io) io.observe(img);
-                    else {
+                    // Observe image for lazy load
+                    if (io && img.dataset.src) io.observe(img);
+                    else if (img.dataset.src) {
                         img.src = img.dataset.src;
                         img.decode?.().catch(()=>{});
                     }
                 }
 
+                // If this is the first page, replace skeletons; otherwise append
+                if (!lastVisible) {
+                    galleryEl.innerHTML = '';
+                }
                 galleryEl.appendChild(frag);
 
                 // update lastVisible for pagination
@@ -562,7 +746,7 @@
                 console.error("Failed to load page", err);
             } finally {
                 loadMoreBtn.disabled = false;
-                loadMoreBtn.innerText = "Load more";
+                loadMoreBtn.innerText = prevText || "Load more";
             }
         }
 
