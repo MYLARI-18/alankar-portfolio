@@ -234,7 +234,7 @@
 
         /* admin panel simplified */
         #adminPanel { display: none; background: linear-gradient(180deg,#060606,#0b0b0b); padding: 48px 16px; border-top: 1px solid rgba(212,175,55,0.04); }
-        .admin-card { max-width: 420px; margin: 0 auto; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding: 18px; border-radius: 10px; border: 1px solid rgba(212,175,55,0.06); }
+        .admin-card { max-width: 420px; margin: 0 auto; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding: 18px; border-radius: 10px; border: 1px solid rgba([...]
         input, select, .btn-post { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 6px; border: 1px solid #333; background: #111; color: white; }
         .btn-post { background: linear-gradient(90deg,#d4af37,#f5e2a6); color: black; border: none; font-weight: 700; cursor: pointer; }
 
@@ -258,7 +258,7 @@
 
     <div id="photoModal" role="dialog" aria-modal="true" aria-hidden="true">
         <div class="modal-container">
-            <span id="modalClose" onclick="closeModal()" style="position:absolute; top:-48px; right:0; color:var(--gold); font-size:36px; cursor:pointer;">&times;</span>
+            <span id="modalClose" onclick="closeModal()" role="button" aria-label="Close modal" style="position:absolute; top:12px; right:12px; color:var(--gold); font-size:36px; cursor:pointer;">&times;</span>
             <div class="modal-loader" id="modalLoader"><div class="spinner" aria-hidden="true"></div><div id="modalLoaderText">Loading…</div></div>
             <img class="modal-content" id="modalImg" alt="Enlarged photo" style="display:none;">
             <br>
@@ -286,7 +286,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, getDocs, limit, startAfter, deleteDoc, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, getDocs, limit, startAfter, deleteDoc, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js[...]
 
         const firebaseConfig = {
             apiKey: "AIzaSyDCBOg_FlIpVZyBYVW6yFUcgU7gwIUD1Ks",
@@ -525,6 +525,21 @@
             document.getElementById('modalImg').src = '';
             document.getElementById('waLink').style.display = 'none';
         }
+
+        // Allow Escape key to close modal and clicking backdrop to close
+        document.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('photoModal');
+            if (modal && modal.classList.contains('active') && (e.key === 'Escape' || e.key === 'Esc')) {
+                closeModal();
+            }
+        });
+
+        document.getElementById('photoModal').addEventListener('click', (e) => {
+            // only close when clicking the backdrop (not when clicking inside the modal container)
+            if (e.target === e.currentTarget) {
+                closeModal();
+            }
+        });
 
         // Lazy-loading using IntersectionObserver for thumbs
         const io = ('IntersectionObserver' in window) ? new IntersectionObserver((entries, obs) => {
