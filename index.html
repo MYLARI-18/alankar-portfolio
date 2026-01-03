@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Alankar Events | Premium Collection</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -13,161 +13,110 @@
             --card-black: #121212;
             --white: #ffffff; 
         }
+        body { font-family: 'Poppins', sans-serif; margin:0; background:var(--bg-black); color:var(--white); overflow-x:hidden; }
 
-        body { 
-            font-family: 'Poppins', sans-serif; 
-            margin: 0; 
-            background: var(--bg-black); 
-            color: var(--white); 
-            overflow-x: hidden;
+        header { padding: 80px 20px 40px; text-align:center; }
+        header h1 { font-family:'Playfair Display', serif; font-size:clamp(2.2rem,10vw,4rem); margin:0; letter-spacing:10px; text-transform:uppercase;
+            background: linear-gradient(90deg, var(--deep-gold), #fff9e6, var(--deep-gold)); background-size:200% auto;
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; animation: shimmerGold 5s linear infinite;
         }
+        header p { color:var(--gold); text-transform:uppercase; letter-spacing:8px; font-size:0.75rem; margin-top:20px; }
 
-        /* --- ANIMATIONS --- */
-        @keyframes revealUp { 
-            0% { opacity: 0; transform: translateY(40px); filter: blur(10px); } 
-            100% { opacity: 1; transform: translateY(0); filter: blur(0); } 
-        }
+        @keyframes shimmerGold { 0% { background-position:-200% center } 100% { background-position:200% center } }
+        @keyframes revealUp { 0%{opacity:0;transform:translateY(20px) scale(.99);filter:blur(8px)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)} }
+        @keyframes modalZoom { from { transform: scale(.92); opacity:0 } to { transform: scale(1); opacity:1 } }
 
-        @keyframes shimmerGold {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
-        }
+        .container { max-width:1600px; margin:0 auto; padding: 0 20px 60px; }
 
-        header { padding: 80px 20px 40px; text-align: center; }
-        header h1 { 
-            font-family: 'Playfair Display', serif; 
-            font-size: clamp(2.2rem, 10vw, 4rem); 
-            margin: 0; 
-            letter-spacing: 10px; 
-            text-transform: uppercase;
-            background: linear-gradient(90deg, var(--deep-gold), #fff9e6, var(--deep-gold));
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: shimmerGold 5s linear infinite;
-        }
-        header p { color: var(--gold); text-transform: uppercase; letter-spacing: 8px; font-size: 0.75rem; margin-top: 20px; }
+        /* Category filter bar */
+        #categoryBar { display:flex; gap:10px; flex-wrap:wrap; padding: 10px 0 30px; }
+        .cat-btn { background:#111; color:var(--gold); border:1px solid #222; padding:8px 14px; border-radius:999px; cursor:pointer; font-weight:700; text-transform:uppercase; font-size:12px; transition:all .18s ease; }
+        .cat-btn:hover { transform:translateY(-3px); }
+        .cat-btn.active { background:var(--gold); color:#000; box-shadow:0 6px 18px rgba(0,0,0,.45); }
 
-        #gallery { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
-            gap: 40px; 
-            padding: 40px; 
-            max-width: 1600px; 
-            margin: 0 auto; 
-        }
+        /* gallery grouped by category */
+        .category-section { margin-bottom: 50px; opacity:0; animation: revealUp .5s ease forwards; animation-delay:120ms; }
+        .category-title { font-size:1rem; letter-spacing:6px; color:var(--gold); text-transform:uppercase; margin:0 0 14px; }
+
+        .gallery-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap:40px; }
 
         .item-card { 
-            position: relative; 
-            overflow: hidden; 
-            cursor: pointer; 
-            opacity: 0; 
-            animation: revealUp 1s ease-out forwards;
-            background: var(--card-black);
-            border-radius: 20px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-            transition: transform 0.4s ease;
+            position:relative; overflow:hidden; cursor:pointer; 
+            background:var(--card-black); border-radius:20px; box-shadow:0 20px 40px rgba(0,0,0,0.6);
+            transition:transform .45s cubic-bezier(.2,.9,.2,1), box-shadow .25s ease;
+            transform-origin:center center;
+            animation: revealUp .6s cubic-bezier(.2,.9,.2,1) both;
+            animation-delay: var(--delay, 0ms);
+            will-change: transform;
         }
+        .item-card:hover { transform: translateY(-10px); box-shadow:0 30px 60px rgba(0,0,0,0.7); }
 
-        .item-card:hover { transform: translateY(-10px); }
-
-        .img-wrapper { 
-            overflow: hidden; 
-            width: 100%; 
-            aspect-ratio: 1/1.2; 
-        }
-
+        .img-wrapper { overflow:hidden; width:100%; aspect-ratio:1/1.2; perspective:1000px; transform-style:preserve-3d; }
         .item-card img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            transition: transform 1.5s ease; 
+            width:100%; height:100%; object-fit:cover; display:block;
+            transition: transform 900ms cubic-bezier(.2,.9,.2,1), filter 300ms ease;
+            transform-origin:center center;
+            will-change: transform, filter;
         }
 
-        .price-tag { 
-            position: absolute; 
-            bottom: 0; 
-            left: 0; 
-            width: 100%;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9)); 
-            padding: 40px 20px 20px; 
-            font-weight: 400; 
-            font-size: 0.9rem; 
-            letter-spacing: 2px; 
-            color: var(--gold);
-            text-align: center;
-            pointer-events: none;
-        }
+        /* hover zoom & subtle rotation */
+        .item-card:hover img { transform: scale(1.06) rotateZ(.3deg); filter:brightness(1.03) saturate(1.02); }
 
-        /* --- DELETE BUTTON FIX --- */
-        .del-btn { 
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 99; /* Higher than everything else */
-            background: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 50px;
-            font-size: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(255, 77, 77, 0.4);
-            text-transform: uppercase;
-        }
+        /* when tilt is active we set transform via JS using rotateX/rotateY & scale */
+        .img-wrapper.tilt img { transition: transform 220ms cubic-bezier(.22,.9,.26,1); }
 
-        /* --- MODAL --- */
-        #photoModal { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            z-index: 9999; 
-            align-items: center; 
-            justify-content: center; 
-            backdrop-filter: blur(20px); 
-            background: rgba(0,0,0,0.9); 
-        }
-        #photoModal.active { display: flex; }
-        .modal-container { position: relative; max-width: 85%; text-align: center; }
-        .modal-content { max-height: 75vh; max-width: 100%; border-radius: 20px; border: 1px solid var(--deep-gold); }
-        
-        .wa-btn { 
-            display: inline-block; 
-            margin-top: 25px; 
-            background: var(--gold); 
-            color: black; 
-            padding: 15px 35px; 
-            text-decoration: none; 
-            border-radius: 50px; 
-            font-weight: 700; 
-            text-transform: uppercase;
-            font-size: 12px;
-            letter-spacing: 2px;
-        }
+        /* small caption area */
+        .price-tag { position:absolute; bottom:0; left:0; width:100%; background:linear-gradient(transparent, rgba(0,0,0,0.9)); padding:40px 20px 20px; font-weight:400; font-size:0.9rem; letter-spacing:2px; color:var(--gold); text-align:center; pointer-events:none; }
 
-        /* --- ADMIN PANEL --- */
-        #adminPanel { display: none; background: #111; padding: 60px 20px; border-top: 1px solid var(--gold); }
-        .admin-card { max-width: 400px; margin: 0 auto; background: #000; padding: 30px; border-radius: 20px; }
-        input, .btn-post { width: 100%; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #333; background: #111; color: white; }
-        .btn-post { background: var(--gold); color: black; border: none; font-weight: 700; cursor: pointer; }
+        /* admin buttons */
+        .del-btn, .edit-btn { position:absolute; top:15px; z-index:99; color:white; border:none; padding:8px 12px; border-radius:50px; font-size:11px; font-weight:700; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.4); text-transform:uppercase; opacity:0.95; transition: transform .18s ease; }
+        .del-btn:hover, .edit-btn:hover { transform:scale(1.04); }
+        .del-btn { background:#ff4d4d; right:15px; }
+        .edit-btn { background:#4d79ff; right:85px; }
 
-        footer { padding: 80px 20px; text-align: center; opacity: 0.4; font-size: 10px; letter-spacing: 5px; cursor: pointer; color: var(--gold); }
+        /* modal */
+        #photoModal { display:none; position:fixed; inset:0; z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(18px); background: rgba(0,0,0,0.92); padding:20px; }
+        #photoModal.active { display:flex; }
+        .modal-container { position:relative; width:100%; max-width:1100px; text-align:center; }
+        .modal-content { max-height:80vh; max-width:100%; border-radius:12px; border:1px solid var(--deep-gold); object-fit:contain; cursor:zoom-in; transition: transform .33s cubic-bezier(.2,.9,.2,1), opacity .2s ease; animation: modalZoom .34s cubic-bezier(.2,.9,.2,1) both; }
+        .modal-content.zoomed { transform: scale(1.6); cursor:zoom-out; }
+
+        .wa-btn { display:inline-block; margin-top:18px; background:var(--gold); color:black; padding:12px 28px; text-decoration:none; border-radius:50px; font-weight:700; text-transform:uppercase; font-size:12px; letter-spacing:2px; }
+
+        /* admin panel */
+        #adminPanel { display:none; background:#111; padding:60px 20px; border-top:1px solid var(--gold); margin-top:40px; }
+        .admin-card { max-width:720px; margin:0 auto; background:#000; padding:30px; border-radius:20px; }
+        .admin-grid { display:grid; grid-template-columns: 1fr 1fr; gap:10px; align-items:center; }
+        input[type="text"], input[type="file"], .btn-post, .btn-save, .btn-cancel { width:100%; padding:12px; margin-bottom:10px; border-radius:8px; border:1px solid #333; background:#111; color:white; }
+        .btn-post { background:var(--gold); color:black; border:none; font-weight:700; cursor:pointer; }
+        .btn-save { background:#4d79ff; color:white; border:none; font-weight:700; cursor:pointer; }
+        .btn-cancel { background:#666; color:white; border:none; font-weight:700; cursor:pointer; }
+        .edit-preview { width:100%; max-height:200px; object-fit:cover; border-radius:8px; margin-bottom:10px; border:1px solid #222; display:block; }
+
+        footer { padding:80px 20px; text-align:center; opacity:0.4; font-size:10px; letter-spacing:5px; cursor:pointer; color:var(--gold); }
+
+        /* responsive adjustments */
+        @media (max-width:720px) { .admin-grid { grid-template-columns: 1fr; } .item-card:hover img { transform: scale(1.03) rotateZ(0); } }
     </style>
 </head>
 <body>
-
     <header>
         <h1>ALANKAR EVENTS</h1>
         <p>A Legacy of Luxury</p>
     </header>
 
-    <div id="gallery"></div>
+    <div class="container">
+        <!-- category filter bar -->
+        <div id="categoryBar" aria-hidden="false"></div>
+
+        <!-- grouped gallery: we will render category sections here -->
+        <div id="allSections"></div>
+    </div>
 
     <div id="photoModal">
         <div class="modal-container">
-            <span onclick="document.getElementById('photoModal').classList.remove('active')" style="position:absolute; top:-55px; right:0; color:var(--gold); font-size:40px; cursor:pointer;">&times;</span>
-            <img class="modal-content" id="modalImg">
+            <span onclick="document.getElementById('photoModal').classList.remove('active'); document.getElementById('modalImg').classList.remove('zoomed')" style="position:absolute; top:-55px; right:0; color:var(--gold); font-size:40px; cursor:pointer;">&times;</span>
+            <img class="modal-content" id="modalImg" alt="Preview">
             <br>
             <a id="waLink" href="#" target="_blank" class="wa-btn">Inquire on WhatsApp</a>
         </div>
@@ -176,9 +125,32 @@
     <div id="adminPanel">
         <div class="admin-card">
             <h2 style="text-align:center; color:var(--gold)">Admin Studio</h2>
-            <input type="file" id="photoInput" accept="image/*">
+
+            <!-- Create new item -->
+            <label style="font-size:12px; color:#bbb;">Upload new photo (creates new item)</label>
+            <div class="admin-grid">
+                <input type="file" id="photoInput" accept="image/*">
+                <input type="text" id="categoryInput" placeholder="Category (e.g. Marriage, Reception, Decor)">
+            </div>
             <input type="text" id="priceInput" placeholder="Price (e.g. ₹80,000)">
             <button class="btn-post" onclick="handleUpload()">Post to Gallery</button>
+
+            <hr style="border:none; height:1px; background:#222; margin:15px 0;">
+
+            <!-- Edit section -->
+            <h3 style="color:var(--gold); text-align:center; margin-bottom:8px;">Edit Item</h3>
+            <img id="editPreview" class="edit-preview" src="" alt="Edit preview" style="display:none;">
+            <div class="admin-grid">
+                <input type="file" id="editPhotoInput" accept="image/*">
+                <input type="text" id="editCategoryInput" placeholder="Edit category">
+            </div>
+            <input type="text" id="editPriceInput" placeholder="Edit price">
+            <input type="hidden" id="editId">
+            <div style="display:flex; gap:10px;">
+                <button class="btn-save" onclick="saveEdit()">Save Changes</button>
+                <button class="btn-cancel" onclick="cancelEdit()">Cancel Edit</button>
+            </div>
+
             <p id="status" style="font-size:12px; color:var(--gold); text-align:center;"></p>
         </div>
     </div>
@@ -187,8 +159,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Firebase config (unchanged)
         const firebaseConfig = {
             apiKey: "AIzaSyDCBOg_FlIpVZyBYVW6yFUcgU7gwIUD1Ks",
             authDomain: "alankar-luxe.firebaseapp.com",
@@ -196,12 +169,15 @@
             messagingSenderId: "1093775711292",
             appId: "1:1093775711292:web:30ffd3741a16c10ce9b739"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
         let isAdmin = false;
         let clickCount = 0;
+        let currentFilter = 'All'; // selected category or 'All'
+        let latestSnapshotDocs = []; // cache docs from snapshot to compute categories
 
+        // secret admin trigger (existing)
         window.secretClick = () => {
             clickCount++;
             if (clickCount === 5) {
@@ -209,78 +185,311 @@
                 if (pass === "alankar777") {
                     isAdmin = true;
                     document.getElementById('adminPanel').style.display = 'block';
-                    document.getElementById('adminPanel').scrollIntoView({behavior: 'smooth'});
-                    render();
+                    document.getElementById('adminPanel').scrollIntoView({behavior:'smooth'});
+                    render(); // re-render so admin buttons appear
                 }
                 clickCount = 0;
             }
-            setTimeout(() => { clickCount = 0; }, 3000);
+            setTimeout(()=>{ clickCount = 0; }, 3000);
         };
 
+        // open modal when clicking a card
         window.openModal = (src, price) => {
-            document.getElementById('modalImg').src = src;
+            const modal = document.getElementById('photoModal');
+            const img = document.getElementById('modalImg');
+            img.classList.remove('zoomed');
+            img.src = src;
             const msg = encodeURIComponent(`Hi Alankar Events, I'm interested in this setup. Price: ${price}`);
             document.getElementById('waLink').href = `https://wa.me/916361755076?text=${msg}`;
-            document.getElementById('photoModal').classList.add('active');
+            modal.classList.add('active');
         };
 
+        // modal image toggle zoom (click)
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'modalImg') {
+                e.target.classList.toggle('zoomed');
+            }
+        });
+
+        // close modal when clicking outside modal content
+        document.getElementById('photoModal').addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'photoModal') {
+                document.getElementById('photoModal').classList.remove('active');
+                document.getElementById('modalImg').classList.remove('zoomed');
+            }
+        });
+
+        // image processing (resize + compress) — unchanged but robust
         async function processImage(file) {
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = (e) => {
-                    const img = new Image(); img.src = e.target.result;
+                    const img = new Image();
+                    img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 700; const scale = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH; canvas.height = img.height * scale;
+                        const MAX_WIDTH = 900;
+                        const scale = Math.min(1, MAX_WIDTH / img.width);
+                        canvas.width = Math.round(img.width * scale);
+                        canvas.height = Math.round(img.height * scale);
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.65));
+                        resolve(canvas.toDataURL('image/jpeg', 0.7));
                     };
+                    img.onerror = (err) => reject(err);
                 };
+                reader.onerror = (err) => reject(err);
             });
         }
 
+        // create new doc with category
         window.handleUpload = async () => {
-            const input = document.getElementById('photoInput');
-            const price = document.getElementById('priceInput');
-            if (!input.files[0]) return;
-            document.getElementById('status').innerText = "UPLOADING...";
-            const b64 = await processImage(input.files[0]);
-            await addDoc(collection(db, "event_photos"), {
-                imageText: b64, price: price.value || "Request Quote", timestamp: new Date()
-            });
-            document.getElementById('status').innerText = "DONE.";
-            input.value = ""; price.value = "";
+            try {
+                const input = document.getElementById('photoInput');
+                const price = document.getElementById('priceInput');
+                const category = document.getElementById('categoryInput').value.trim() || 'Uncategorized';
+                if (!input.files[0]) return alert('Select a photo to upload.');
+                document.getElementById('status').innerText = "UPLOADING...";
+                const b64 = await processImage(input.files[0]);
+                if (!b64) throw new Error('Failed to process image');
+                await addDoc(collection(db, "event_photos"), {
+                    imageText: b64,
+                    price: price.value || "Request Quote",
+                    category: category,
+                    timestamp: new Date()
+                });
+                document.getElementById('status').innerText = "DONE.";
+                input.value = ""; price.value = ""; document.getElementById('categoryInput').value = '';
+            } catch (err) {
+                console.error('Upload error', err);
+                document.getElementById('status').innerText = "ERROR: check console";
+            }
         };
 
+        // delete
         window.deleteItem = async (e, id) => {
-            e.stopPropagation(); // Stops the modal from opening when you click delete
-            if(confirm("Permanently delete this?")) {
+            e.stopPropagation();
+            if (confirm("Permanently delete this?")) {
                 await deleteDoc(doc(db, "event_photos", id));
             }
         };
 
-        const render = () => {
-            onSnapshot(query(collection(db, "event_photos"), orderBy("timestamp", "desc")), (snap) => {
-                const gallery = document.getElementById('gallery');
-                gallery.innerHTML = ""; 
-                snap.forEach((fbDoc) => {
-                    const d = fbDoc.data();
-                    const card = document.createElement('div');
-                    card.className = "item-card";
-                    card.onclick = () => openModal(d.imageText, d.price);
-                    card.innerHTML = `
-                        ${isAdmin ? `<button class="del-btn" onclick="deleteItem(event, '${fbDoc.id}')">REMOVE</button>` : ""}
-                        <div class="img-wrapper"><img src="${d.imageText}"></div>
-                        <div class="price-tag">${d.price}</div>
-                    `;
-                    gallery.appendChild(card);
-                });
-            });
+        // open edit UI prefilled
+        window.openEdit = (id, imageText, price, category) => {
+            document.getElementById('editId').value = id;
+            document.getElementById('editPreview').src = imageText || '';
+            document.getElementById('editPreview').style.display = imageText ? 'block' : 'none';
+            document.getElementById('editPriceInput').value = price || '';
+            document.getElementById('editCategoryInput').value = category || '';
+            document.getElementById('editPhotoInput').value = '';
+            document.getElementById('adminPanel').style.display = 'block';
+            document.getElementById('adminPanel').scrollIntoView({behavior:'smooth'});
+            document.getElementById('status').innerText = '';
         };
 
+        window.cancelEdit = () => {
+            document.getElementById('editId').value = '';
+            document.getElementById('editPreview').src = '';
+            document.getElementById('editPreview').style.display = 'none';
+            document.getElementById('editPhotoInput').value = '';
+            document.getElementById('editPriceInput').value = '';
+            document.getElementById('editCategoryInput').value = '';
+            document.getElementById('status').innerText = '';
+        };
+
+        // preview selected edit image immediately
+        document.addEventListener('change', (e) => {
+            if (e.target && e.target.id === 'editPhotoInput') {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById('editPreview').src = ev.target.result;
+                    document.getElementById('editPreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // save edit (update price and/or image and/or category)
+        window.saveEdit = async () => {
+            try {
+                const id = document.getElementById('editId').value;
+                if (!id) return alert('No item selected for edit.');
+                document.getElementById('status').innerText = "SAVING...";
+                const newPrice = document.getElementById('editPriceInput').value || "Request Quote";
+                const newCategory = document.getElementById('editCategoryInput').value.trim() || 'Uncategorized';
+                const fileInput = document.getElementById('editPhotoInput');
+                const updateData = { price: newPrice, category: newCategory, timestamp: new Date() };
+
+                if (fileInput.files[0]) {
+                    const b64 = await processImage(fileInput.files[0]);
+                    if (!b64) throw new Error('Failed to process new image');
+                    updateData.imageText = b64;
+                }
+
+                await updateDoc(doc(db, "event_photos", id), updateData);
+                document.getElementById('status').innerText = "SAVED.";
+                cancelEdit();
+            } catch (err) {
+                console.error('Save edit error', err);
+                document.getElementById('status').innerText = "ERROR: check console";
+            }
+        };
+
+        // build category bar UI
+        function renderCategoryBar(categories) {
+            const bar = document.getElementById('categoryBar');
+            bar.innerHTML = '';
+            const allBtn = document.createElement('button');
+            allBtn.className = 'cat-btn' + (currentFilter === 'All' ? ' active' : '');
+            allBtn.textContent = 'All';
+            allBtn.onclick = () => { currentFilter = 'All'; renderSections(latestSnapshotDocs); };
+            bar.appendChild(allBtn);
+
+            categories.forEach(cat => {
+                const b = document.createElement('button');
+                b.className = 'cat-btn' + (currentFilter === cat ? ' active' : '');
+                b.textContent = cat;
+                b.onclick = () => { currentFilter = cat; renderSections(latestSnapshotDocs); };
+                bar.appendChild(b);
+            });
+        }
+
+        // render grouped sections by category (or filtered)
+        function renderSections(docs) {
+            const container = document.getElementById('allSections');
+            container.innerHTML = '';
+
+            // compute categories and group
+            const groups = {};
+            docs.forEach(docObj => {
+                const d = docObj.data;
+                const cat = (d.category || 'Uncategorized').trim() || 'Uncategorized';
+                groups[cat] = groups[cat] || [];
+                groups[cat].push({ id: docObj.id, data: d });
+            });
+
+            // sort categories alphabetically but keep 'Uncategorized' last if present
+            let cats = Object.keys(groups).sort((a,b) => a.localeCompare(b));
+            if (cats.includes('Uncategorized')) {
+                cats = cats.filter(c => c !== 'Uncategorized').concat(['Uncategorized']);
+            }
+
+            // if filter applied, narrow cats
+            const visibleCats = currentFilter === 'All' ? cats : cats.filter(c => c === currentFilter);
+
+            visibleCats.forEach(cat => {
+                const section = document.createElement('section');
+                section.className = 'category-section';
+                const title = document.createElement('h3');
+                title.className = 'category-title';
+                title.textContent = cat;
+                section.appendChild(title);
+
+                const gallery = document.createElement('div');
+                gallery.className = 'gallery-grid';
+
+                // add items (stagger using --delay)
+                groups[cat].forEach((item, idx) => {
+                    const d = item.data;
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    // stagger animation: 70ms per item
+                    card.style.setProperty('--delay', `${idx * 70}ms`);
+                    card.onclick = () => openModal(d.imageText, d.price);
+
+                    const imgWrapper = document.createElement('div');
+                    imgWrapper.className = 'img-wrapper';
+                    const img = document.createElement('img');
+                    img.src = d.imageText || '';
+                    img.alt = 'setup image';
+                    imgWrapper.appendChild(img);
+                    card.appendChild(imgWrapper);
+
+                    const priceTag = document.createElement('div');
+                    priceTag.className = 'price-tag';
+                    priceTag.textContent = d.price || '';
+                    card.appendChild(priceTag);
+
+                    if (isAdmin) {
+                        const delBtn = document.createElement('button');
+                        delBtn.className = 'del-btn';
+                        delBtn.textContent = 'REMOVE';
+                        delBtn.onclick = (e) => deleteItem(e, item.id);
+                        card.appendChild(delBtn);
+
+                        const editBtn = document.createElement('button');
+                        editBtn.className = 'edit-btn';
+                        editBtn.textContent = 'EDIT';
+                        editBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            openEdit(item.id, d.imageText, d.price, d.category);
+                        };
+                        card.appendChild(editBtn);
+                    }
+
+                    // enable 3D tilt on pointer devices for subtle depth effect
+                    if (window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+                        enableTilt(card, imgWrapper, img);
+                    }
+
+                    gallery.appendChild(card);
+                });
+
+                section.appendChild(gallery);
+                container.appendChild(section);
+            });
+
+            // update category bar active state
+            renderCategoryBar(cats);
+        }
+
+        // tilt effect: small rotateX/rotateY while moving mouse over card
+        function enableTilt(card, wrapper, img) {
+            wrapper.classList.add('tilt');
+            const strength = 10; // degrees
+            const scale = 1.06;
+            let frame = null;
+            const onMove = (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                const rotY = (x - 0.5) * strength; // rotateY
+                const rotX = (0.5 - y) * (strength * 0.6); // rotateX
+                // smooth via requestAnimationFrame
+                if (frame) cancelAnimationFrame(frame);
+                frame = requestAnimationFrame(() => {
+                    img.style.transform = `perspective(1000px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${scale})`;
+                });
+            };
+            const onLeave = () => {
+                if (frame) cancelAnimationFrame(frame);
+                img.style.transform = '';
+            };
+            card.addEventListener('mousemove', onMove);
+            card.addEventListener('mouseleave', onLeave);
+            card.addEventListener('touchstart', onLeave);
+        }
+
+        // Subscribe to Firestore collection changes, cache docs, then render
+        function render() {
+            const q = query(collection(db, "event_photos"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snap) => {
+                console.log('onSnapshot fired, docs:', snap.size);
+                // cache as an array of {id, data}
+                latestSnapshotDocs = [];
+                snap.forEach(fbDoc => latestSnapshotDocs.push({ id: fbDoc.id, data: fbDoc.data() }));
+                // render expects objects with id and data
+                renderSections(latestSnapshotDocs.map(x => ({ id: x.id, data: x.data })));
+            }, (err) => {
+                console.error('onSnapshot error:', err);
+                document.getElementById('allSections').innerHTML = '<p style="color:var(--gold); text-align:center;">Unable to load gallery (check console)</p>';
+            });
+        }
+
+        // initial render subscription
         render();
     </script>
 </body>
