@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -871,15 +872,108 @@
         // initial load
         resetAndLoad();
 
-        // register small service worker (improves repeat loads, caches static assets)
+        // ---- Service worker embedded registration (sw code is created as a Blob at runtime)
+        // Note: having the service worker code inside the HTML lets you ship a single file.
+        // Browser support: Chrome/Firefox accept blob-based registrations. Safari has limited support.
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js', { scope: './' })
-                .then(reg => {
-                    console.log('ServiceWorker registered', reg);
-                })
-                .catch(err => {
-                    console.warn('ServiceWorker registration failed', err);
-                });
+            (async function registerInlineSW(){
+                const swScript = `
+// Small service worker to cache static shell and provide basic runtime caching for repeated visits.
+// Strategy: precache shell + runtime cache-first for assets + network-first for navigations.
+
+const SW_VERSION = 'alankar-sw-v1';
+const PRECACHE = [
+  './',
+  './index.html'
+];
+const RUNTIME_CACHE = 'alankar-runtime-v1';
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(SW_VERSION).then(cache => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys.filter(k => k !== SW_VERSION && k !== RUNTIME_CACHE).map(k => caches.delete(k))
+    )).then(() => self.clients.claim())
+  );
+});
+
+async function networkFirst(request) {
+  const cache = await caches.open(RUNTIME_CACHE);
+  try {
+    const response = await fetch(request);
+    if (response && response.ok) cache.put(request, response.clone());
+    return response;
+  } catch (err) {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    throw err;
+  }
+}
+
+async function cacheFirst(request) {
+  const cache = await caches.open(RUNTIME_CACHE);
+  const cached = await cache.match(request);
+  if (cached) {
+    fetch(request).then(resp => {
+      if (resp && resp.ok) cache.put(request, resp.clone());
+    }).catch(()=>{});
+    return cached;
+  }
+  const response = await fetch(request);
+  if (response && response.ok) cache.put(request, response.clone());
+  return response;
+}
+
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  if (req.method !== 'GET') return;
+
+  if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
+    event.respondWith(
+      networkFirst(req).catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
+  if (url.origin === self.location.origin) {
+    if (req.destination === 'style' || req.destination === 'script' || req.destination === 'image' || req.destination === 'font') {
+      event.respondWith(
+        cacheFirst(req).catch(() => fetch(req))
+      );
+      return;
+    }
+  }
+
+  event.respondWith(fetch(req).catch(() => caches.match(req)));
+});
+`.trim();
+
+                try {
+                    // create a blob from script and register it
+                    const blob = new Blob([swScript], { type: 'text/javascript' });
+                    const swUrl = URL.createObjectURL(blob);
+                    const reg = await navigator.serviceWorker.register(swUrl, { scope: './' });
+                    console.log('ServiceWorker registered from blob', reg);
+                    // revoke the object URL; browser keeps the script for the registered worker
+                    URL.revokeObjectURL(swUrl);
+                } catch (err) {
+                    // fallback: attempt to register external sw.js if present on server
+                    console.warn('Blob-based SW registration failed, trying ./sw.js', err);
+                    try {
+                        await navigator.serviceWorker.register('./sw.js', { scope: './' });
+                        console.log('ServiceWorker registered from ./sw.js');
+                    } catch (e) {
+                        console.warn('External sw.js registration also failed', e);
+                    }
+                }
+            })();
         }
     </script>
 
